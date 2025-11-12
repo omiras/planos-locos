@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center p-4">
     <div class="max-w-md w-full">
-      <h1 class="text-4xl font-bold text-white text-center mb-8">Planos Locos</h1>
       
       <button
         @click="fetchPlanesAndShow"
