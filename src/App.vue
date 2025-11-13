@@ -1,23 +1,16 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center p-4">
     <div class="max-w-md w-full">
-      
-      <button
-        @click="fetchPlanesAndShow"
-        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200 mb-8"
-      >
-        New Plane
-      </button>
+
+      <button @click="fetchPlanesAndShow"
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200 mb-8">
+        Cambiar Plano </button>
 
       <div v-if="currentPlane" class="bg-white rounded-lg shadow-2xl overflow-hidden">
         <!-- Card Image -->
         <div class="relative bg-gray-200 w-full flex items-center justify-center p-4">
-          <img
-            v-if="currentPlane.image_uris"
-            :src="currentPlane.image_uris.normal"
-            :alt="currentPlane.name"
-            class="max-w-full max-h-96 object-contain rotate-90"
-          />
+          <img v-if="currentPlane.image_uris" :src="currentPlane.image_uris.normal" :alt="currentPlane.name"
+            class="max-w-full max-h-96 object-contain rotate-90" />
           <div v-else class="w-full h-64 flex items-center justify-center text-gray-400">
             No image available
           </div>
@@ -28,7 +21,7 @@
           <h2 class="text-2xl font-bold text-gray-800 mb-2">
             {{ translatedPlane?.name || currentPlane.name }}
           </h2>
-          
+
           <div v-if="translatedPlane?.type_line" class="text-sm text-gray-600 mb-4 italic">
             {{ translatedPlane.type_line }}
           </div>
@@ -37,7 +30,8 @@
             🔄 Traduciendo...
           </div>
 
-          <div v-else-if="translatedPlane?.oracle_text" class="bg-gray-100 p-4 rounded text-gray-700 text-sm leading-relaxed">
+          <div v-else-if="translatedPlane?.oracle_text"
+            class="bg-gray-100 p-4 rounded text-gray-700 text-sm leading-relaxed">
             {{ translatedPlane.oracle_text }}
           </div>
 
@@ -56,6 +50,19 @@
 
 <script setup>
 import { ref } from 'vue'
+import sound1 from './assets/sound1.wav'
+import sound2 from './assets/sound2.wav'
+import sound3 from './assets/sound3.wav'
+
+// Create Audio instances for all sounds
+const clickSounds = [
+  new Audio(sound1),
+  new Audio(sound2),
+  new Audio(sound3)
+]
+clickSounds.forEach(sound => {
+  sound.preload = 'auto'
+})
 
 const planes = ref([])
 const currentPlane = ref(null)
@@ -119,6 +126,15 @@ async function translateCurrentPlane() {
 }
 
 async function fetchPlanesAndShow() {
+  // play a random click sound when user requests a new plane
+  try {
+    const randomSound = clickSounds[Math.floor(Math.random() * clickSounds.length)]
+    randomSound.currentTime = 0
+    await randomSound.play()
+  } catch (e) {
+    // some browsers may reject play() silently if not allowed; ignore
+    // console.debug('Audio play failed:', e)
+  }
   if (planes.value.length === 0) {
     await fetchPlanes()
   }
@@ -126,5 +142,4 @@ async function fetchPlanesAndShow() {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>
