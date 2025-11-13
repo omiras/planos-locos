@@ -27,7 +27,7 @@
           </div>
 
           <div v-else-if="translatedPlane?.oracle_text"
-            class="bg-gray-100 p-3 rounded text-gray-700 text-sm leading-relaxed">
+            class="bg-gray-100 p-3 rounded text-gray-700 text-lg leading-relaxed">
             {{ translatedPlane.oracle_text }}
           </div>
 
