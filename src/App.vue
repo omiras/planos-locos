@@ -1,48 +1,56 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center p-4">
-    <div class="max-w-md w-full">
+  <div class="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center p-2">
+    <div class="w-full h-screen flex flex-col">
 
-      <button @click="fetchPlanesAndShow"
-        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200 mb-8">
-        Cambiar Plano </button>
-
-      <div v-if="currentPlane" class="bg-white rounded-lg shadow-2xl overflow-hidden">
-        <!-- Card Image -->
-        <div class=" w-full flex items-center justify-center p-4 -rotate-90">
+      <div v-if="currentPlane" class="flex flex-col h-full">
+        <!-- Card Image - occupies top portion -->
+        <div class="flex-1 w-full flex items-center justify-center p-2 -rotate-90">
           <img v-if="currentPlane.image_uris" :src="currentPlane.image_uris.art_crop" :alt="currentPlane.name"
-            class="max-w-full max-h-96 object-contain rotate-90" />
-          <div v-else class="w-full h-64 flex items-center justify-center text-gray-400">
+            class="max-w-full max-h-full object-cover rotate-90" />
+          <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
             No image available
           </div>
         </div>
 
-        <!-- Card Info -->
-        <div class="p-6">
+        <!-- Card Info - bottom section -->
+        <div class="bg-white p-4 flex-none max-h-1/3 overflow-y-auto">
           <h2 class="text-2xl font-bold text-gray-800 mb-2">
             {{ translatedPlane?.name || currentPlane.name }}
           </h2>
 
-          <div v-if="translatedPlane?.type_line" class="text-sm text-gray-600 mb-4 italic">
+          <div v-if="translatedPlane?.type_line" class="text-sm text-gray-600 mb-3 italic">
             {{ translatedPlane.type_line }}
           </div>
 
-          <div v-if="isTranslating" class="bg-blue-100 p-4 rounded text-blue-700 text-sm">
+          <div v-if="isTranslating" class="bg-blue-100 p-3 rounded text-blue-700 text-sm mb-3">
             🔄 Traduciendo...
           </div>
 
           <div v-else-if="translatedPlane?.oracle_text"
-            class="bg-gray-100 p-4 rounded text-gray-700 text-sm leading-relaxed">
+            class="bg-gray-100 p-3 rounded text-gray-700 text-sm leading-relaxed">
             {{ translatedPlane.oracle_text }}
           </div>
 
-          <div v-else class="text-gray-500 text-sm text-center py-4">
+          <div v-else class="text-gray-500 text-sm text-center py-3">
             No rules text available
           </div>
+
+          <!-- Button at the bottom -->
+          <button @click="fetchPlanesAndShow"
+            class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200 mt-4">
+            Cambiar Plano
+          </button>
         </div>
       </div>
 
-      <div v-else class="text-center text-gray-300 py-12">
-        Click "New Plane" to load a random plane card
+      <div v-else class="flex-1 flex items-center justify-center">
+        <div class="text-center text-gray-300">
+          <p class="text-xl mb-6">Click "New Plane" to load a random plane card</p>
+          <button @click="fetchPlanesAndShow"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200">
+            Cambiar Plano
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -139,6 +147,8 @@ async function fetchPlanesAndShow() {
     await fetchPlanes()
   }
   showRandomPlane()
+  // Scroll to top of viewport
+  window.scrollTo(0, 0)
 }
 </script>
 
