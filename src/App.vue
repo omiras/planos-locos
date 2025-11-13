@@ -96,7 +96,7 @@ async function fetchPlanes() {
 async function translateText(text) {
   if (!text) return text
   try {
-    const response = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=en|es')
+    const response = await fetch('https://api.mymemory.translated.net/get?de=oscar.miras@gmail.com&q=' + encodeURIComponent(text) + '&langpair=en|es')
     const data = await response.json()
     if (data.responseStatus === 200) {
       return data.responseData.translatedText
