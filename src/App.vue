@@ -8,8 +8,8 @@
 
       <div v-if="currentPlane" class="bg-white rounded-lg shadow-2xl overflow-hidden">
         <!-- Card Image -->
-        <div class="relative bg-gray-200 w-full flex items-center justify-center p-4">
-          <img v-if="currentPlane.image_uris" :src="currentPlane.image_uris.normal" :alt="currentPlane.name"
+        <div class=" w-full flex items-center justify-center p-4 -rotate-90">
+          <img v-if="currentPlane.image_uris" :src="currentPlane.image_uris.art_crop" :alt="currentPlane.name"
             class="max-w-full max-h-96 object-contain rotate-90" />
           <div v-else class="w-full h-64 flex items-center justify-center text-gray-400">
             No image available
@@ -71,7 +71,7 @@ const isTranslating = ref(false)
 
 async function fetchPlanes() {
   try {
-    const response = await fetch('https://api.scryfall.com/cards/search?q=type:plane')
+    const response = await fetch('https://api.scryfall.com/cards/search?q=type:plane+has:image+-is:funny')
     if (!response.ok) {
       throw new Error(`API error: ${response.status}`)
     }
