@@ -1,5 +1,18 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 p-2">
+    <!-- Fullscreen overlay with fade-out effect -->
+    <div v-if="showOverlay" :class="['fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity', overlayFading ? 'opacity-0' : 'opacity-100']"
+      @transitionend="showOverlay = false">
+      <div class="relative w-full h-full flex flex-col items-center justify-center">
+        <img v-if="currentPlane.artwork || currentPlane.full || currentPlane.image_uris"
+          :src="currentPlane.artwork || currentPlane.full || currentPlane.image_uris?.art_crop"
+          :alt="currentPlane.name" class="w-full h-full object-cover" />
+        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-8 text-white">
+          <h1 class="text-5xl font-bold">{{ displayName }}</h1>
+        </div>
+      </div>
+    </div>
+
     <div class="w-full flex flex-col">
 
       <div v-if="currentPlane" class="flex flex-col h-full">
@@ -113,6 +126,10 @@ const displayText = computed(() => {
 // Reference to the title element so we can scroll to it
 const titleRef = ref(null)
 
+// Overlay effect for new plane
+const showOverlay = ref(false)
+const overlayFading = ref(false)
+
 // Fullscreen control
 const isFullscreen = ref(!!document.fullscreenElement)
 function toggleFullScreen() {
@@ -164,16 +181,28 @@ async function fetchPlanesAndShow() {
   }
   // Data already loaded from local JSON, just show a random plane
   showRandomPlane()
-  // Wait for DOM update and scroll the title into view
-  try {
-    await nextTick()
-    if (titleRef.value && titleRef.value.scrollIntoView) {
-      titleRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  // Show fullscreen overlay with fade-out effect
+  showOverlay.value = true
+  overlayFading.value = false
+  // After 2 seconds, start fading out
+  setTimeout(() => {
+    overlayFading.value = true
+  }, 2000)
+  // Wait for DOM update and scroll the title into view after overlay fades
+  setTimeout(() => {
+    try {
+      if (titleRef.value && titleRef.value.scrollIntoView) {
+        titleRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    } catch (e) {
+      // ignore
     }
-  } catch (e) {
-    // ignore
-  }
+  }, 2300)
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.transition-opacity {
+  transition: opacity 0.8s ease-out;
+}
+</style>
