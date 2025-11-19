@@ -5,12 +5,9 @@
       <div v-if="currentPlane" class="flex flex-col h-full">
         <!-- Card Image - top portion (no rotation) -->
         <div class="w-full flex-none h-[60vh] overflow-hidden bg-black">
-          <img
-            v-if="currentPlane.artwork || currentPlane.full || currentPlane.image_uris"
+          <img v-if="currentPlane.artwork || currentPlane.full || currentPlane.image_uris"
             :src="currentPlane.artwork || currentPlane.full || currentPlane.image_uris?.art_crop"
-            :alt="currentPlane.name"
-            class="w-full h-full object-cover"
-          />
+            :alt="currentPlane.name" class="w-full h-full object-cover" />
           <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
             No image available
           </div>
@@ -18,7 +15,7 @@
 
         <!-- Card Info - bottom section -->
         <div class="bg-white p-4 relative z-10">
-          <h2 class="text-2xl font-bold text-gray-800 mb-2">
+          <h2 ref="titleRef" class="text-2xl font-bold text-gray-800 mb-2">
             {{ displayName }}
           </h2>
 
@@ -41,15 +38,21 @@
 
           <!-- Buttons: language toggle + change plane -->
           <div class="flex gap-3 mt-4 z-20 relative">
+            <button @click="fetchPlanesAndShow"
+              class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+              Cambiar Plano
+            </button>
             <button @click="showEnglish = !showEnglish"
               :class="['w-24 text-sm font-semibold py-3 px-3 rounded-lg transition duration-150', showEnglish ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-800']">
               {{ showEnglish ? 'EN' : 'ES' }}
             </button>
 
-            <button @click="fetchPlanesAndShow"
-              class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
-              Cambiar Plano
+            <button @click="toggleFullScreen"
+              :class="['w-36 text-sm font-semibold py-3 px-3 rounded-lg transition duration-150 overflow-hidden truncate', isFullscreen ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-800']">
+              {{ isFullscreen ? 'Salir Pantalla Completa' : 'Pantalla Completa' }}
             </button>
+
+
           </div>
         </div>
       </div>
@@ -68,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick, onUnmounted } from 'vue'
 import sound1 from './assets/sound1.wav'
 import sound2 from './assets/sound2.wav'
 import sound3 from './assets/sound3.wav'
@@ -107,6 +110,29 @@ const displayText = computed(() => {
   return currentPlane.value.text_es || translatedPlane.value?.text || currentPlane.value.text || ''
 })
 
+// Reference to the title element so we can scroll to it
+const titleRef = ref(null)
+
+// Fullscreen control
+const isFullscreen = ref(!!document.fullscreenElement)
+function toggleFullScreen() {
+  try {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+function onFullscreenChange() {
+  isFullscreen.value = !!document.fullscreenElement
+}
+document.addEventListener('fullscreenchange', onFullscreenChange)
+onUnmounted(() => document.removeEventListener('fullscreenchange', onFullscreenChange))
+
 function showRandomPlane() {
   if (planes.value.length === 0) return
   const randomIndex = Math.floor(Math.random() * planes.value.length)
@@ -138,6 +164,15 @@ async function fetchPlanesAndShow() {
   }
   // Data already loaded from local JSON, just show a random plane
   showRandomPlane()
+  // Wait for DOM update and scroll the title into view
+  try {
+    await nextTick()
+    if (titleRef.value && titleRef.value.scrollIntoView) {
+      titleRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  } catch (e) {
+    // ignore
+  }
 }
 </script>
 
