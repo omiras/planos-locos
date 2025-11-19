@@ -2,6 +2,8 @@
 
 Aplicación web ligera para ver "planos" (plane cards) localmente. Muestra imágenes grandes, texto (inglés/español) y sustituye símbolos de maná como `{R}` por iconos SVG.
 
+[App online](https://planos-locos.vercel.app/)
+
 **Contenido**
 - `src/App.vue` — Componente principal (Vue 3, `<script setup>`). Gestiona navegación entre planos, reproducción de sonido al cambiar de plano, overlay fullscreen con fade-out, y alternador de idioma (EN/ES).
 - `src/assets/planes.json` — Datos locales de los planos (incluye `text` y `text_es`).
