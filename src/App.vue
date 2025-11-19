@@ -41,7 +41,7 @@
           </div>
 
           <div v-else-if="displayText"
-            class="bg-gray-100 p-3 rounded text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+            class="bg-gray-100 p-3 rounded text-gray-700 text-lg leading-relaxed whitespace-pre-line">
             {{ displayText }}
           </div>
 
