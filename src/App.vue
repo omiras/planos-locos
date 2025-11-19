@@ -40,9 +40,9 @@
             🔄 Traduciendo...
           </div>
 
-          <div v-else-if="displayText"
-            class="bg-gray-100 p-3 rounded text-gray-700 text-lg leading-relaxed whitespace-pre-line">
-            {{ displayText }}
+          <div v-else-if="displayHtml"
+            class="bg-gray-100 p-3 rounded text-gray-700 text-lg leading-relaxed"
+            v-html="displayHtml">
           </div>
 
           <div v-else class="text-gray-500 text-sm text-center py-3">
@@ -89,6 +89,7 @@ import sound1 from './assets/sound1.wav'
 import sound2 from './assets/sound2.wav'
 import sound3 from './assets/sound3.wav'
 import planesData from './assets/planes.json'
+import symbologyData from './assets/symbology.json'
 
 // Create Audio instances for all sounds
 const clickSounds = [
@@ -122,6 +123,33 @@ const displayText = computed(() => {
   if (showEnglish.value) return currentPlane.value.text || ''
   return currentPlane.value.text_es || translatedPlane.value?.text || currentPlane.value.text || ''
 })
+
+// Build a map of symbol token -> svg_uri (symbologyData has { data: [...] })
+const symbolMap = new Map()
+try {
+  const list = Array.isArray(symbologyData.data) ? symbologyData.data : symbologyData
+  list.forEach(s => {
+    if (s && s.symbol && s.svg_uri) symbolMap.set(s.symbol, s.svg_uri)
+  })
+} catch (e) {
+  // ignore if symbology not available
+}
+
+function replaceSymbolsInTextWithHtml(text) {
+  if (!text) return ''
+  // Replace tokens like {R} or {W/U} with <img> tags when we have an svg for them
+  const inlineStyle = 'display:inline-block;height:1em;width:auto;max-width:1.2em;max-height:1.2em;vertical-align:-0.1em;margin:0 0.08em;object-fit:contain;'
+  const replaced = String(text).replace(/\{[^}]+\}/g, token => {
+    const svg = symbolMap.get(token)
+    if (svg) {
+      return `<img src="${svg}" alt="${token}" style="${inlineStyle}"/>`
+    }
+    return token
+  })
+  return replaced.replace(/\n/g, '<br/>')
+}
+
+const displayHtml = computed(() => replaceSymbolsInTextWithHtml(displayText.value || ''))
 
 // Reference to the title element so we can scroll to it
 const titleRef = ref(null)
