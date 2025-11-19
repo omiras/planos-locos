@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 flex items-center justify-center p-2">
-    <div class="w-full h-screen flex flex-col overflow-hidden">
+  <div class="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 p-2">
+    <div class="w-full flex flex-col">
 
       <div v-if="currentPlane" class="flex flex-col h-full">
         <!-- Card Image - top portion (no rotation) -->
@@ -17,7 +17,7 @@
         </div>
 
         <!-- Card Info - bottom section -->
-        <div class="bg-white p-4 flex-1 overflow-y-auto relative z-10">
+        <div class="bg-white p-4 relative z-10">
           <h2 class="text-2xl font-bold text-gray-800 mb-2">
             {{ displayName }}
           </h2>
@@ -138,8 +138,6 @@ async function fetchPlanesAndShow() {
   }
   // Data already loaded from local JSON, just show a random plane
   showRandomPlane()
-  // Scroll to top of viewport smoothly
-  try { window.scrollTo({ top: 0, behavior: 'smooth' }) } catch (e) { window.scrollTo(0,0) }
 }
 </script>
 
