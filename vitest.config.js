@@ -8,8 +8,10 @@ export default defineConfig({
     globals: true,
     setupFiles: [],
     // make sure Vite resolves vue files properly for vitest
-    deps: {
-      inline: ['vue']
+    server: {
+        deps: {
+            inline: ['vue']
+        }
     }
   },
 })
