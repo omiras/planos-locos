@@ -4,8 +4,8 @@
     <div v-if="showOverlay" :class="['fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity', overlayFading ? 'opacity-0' : 'opacity-100']"
       @transitionend="showOverlay = false">
       <div class="relative w-full h-full flex flex-col items-center justify-center">
-        <img v-if="currentPlane.artwork || currentPlane.full || currentPlane.image_uris"
-          :src="currentPlane.artwork || currentPlane.full || currentPlane.image_uris?.art_crop"
+        <img v-if="currentPlane"
+          :src="getPlaneImage(currentPlane)"
           :alt="currentPlane.name" class="w-full h-full object-cover" />
         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-8 text-white">
           <h1 class="text-5xl font-bold">{{ displayName }}</h1>
@@ -20,8 +20,8 @@
       <div v-if="currentPlane" class="flex flex-col h-full">
         <!-- Card Image - top portion (no rotation) -->
         <div class="w-full flex-none h-[60vh] overflow-hidden bg-black">
-          <img v-if="currentPlane.artwork || currentPlane.full || currentPlane.image_uris"
-            :src="currentPlane.artwork || currentPlane.full || currentPlane.image_uris?.art_crop"
+          <img v-if="currentPlane"
+            :src="getPlaneImage(currentPlane)"
             :alt="currentPlane.name" class="w-full h-full object-cover" />
           <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
             No image available
@@ -207,6 +207,17 @@ function onFullscreenChange() {
 }
 document.addEventListener('fullscreenchange', onFullscreenChange)
 onUnmounted(() => document.removeEventListener('fullscreenchange', onFullscreenChange))
+
+function getPlaneImage(plane) {
+  if (plane && plane.id) {
+    try {
+      return new URL(`./assets/images/${plane.id}.jpg`, import.meta.url).href
+    } catch (e) {
+      console.warn('Failed to load local image for', plane.name, e)
+    }
+  }
+  return plane ? (plane.artwork || plane.full || plane.image_uris?.art_crop) : ''
+}
 
 function showRandomPlane() {
   if (planes.value.length === 0) return
