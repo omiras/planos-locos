@@ -13,7 +13,9 @@
       </div>
     </div>
 
-    <div class="w-full flex flex-col">
+    <SetupScreen v-if="!gameStarted" @start="handleStartGame" />
+
+    <div v-else class="w-full flex flex-col">
 
       <div v-if="currentPlane" class="flex flex-col h-full">
         <!-- Card Image - top portion (no rotation) -->
@@ -96,6 +98,7 @@ import sound2 from './assets/sound2.wav'
 import sound3 from './assets/sound3.wav'
 import planesData from './assets/planes.json'
 import symbologyData from './assets/symbology.json'
+import SetupScreen from './components/SetupScreen.vue'
 
 // Create Audio instances for all sounds
 const clickSounds = [
@@ -114,6 +117,24 @@ const translatedPlane = ref(null)
 const isTranslating = ref(false)
 const showEnglish = ref(false)
 const isSoundEnabled = ref(true)
+const gameStarted = ref(false)
+const allowRepeats = ref(false)
+const seenPlanes = ref(new Set())
+
+async function handleStartGame(settings) {
+  allowRepeats.value = settings.allowRepeats
+  isSoundEnabled.value = settings.soundEnabled
+  
+  // Start game state first to ensure UI transition happens
+  gameStarted.value = true
+  
+  // Try to enter fullscreen if requested
+  if (settings.fullscreenEnabled) {
+    await toggleFullScreen()
+  }
+  
+  showRandomPlane()
+}
 
 const displayName = computed(() => {
   if (!currentPlane.value) return ''
@@ -167,15 +188,17 @@ const overlayFading = ref(false)
 
 // Fullscreen control
 const isFullscreen = ref(!!document.fullscreenElement)
-function toggleFullScreen() {
+
+async function toggleFullScreen() {
   try {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen()
+      await document.documentElement.requestFullscreen()
     } else {
-      document.exitFullscreen()
+      await document.exitFullscreen()
     }
   } catch (e) {
-    // ignore
+    console.error("Fullscreen toggle failed:", e)
+    // Fallback: update state manually if needed, though usually we rely on the event
   }
 }
 
@@ -187,8 +210,31 @@ onUnmounted(() => document.removeEventListener('fullscreenchange', onFullscreenC
 
 function showRandomPlane() {
   if (planes.value.length === 0) return
-  const randomIndex = Math.floor(Math.random() * planes.value.length)
-  currentPlane.value = planes.value[randomIndex]
+
+  let availablePlanes = planes.value
+
+  if (!allowRepeats.value) {
+    // Filter out seen planes
+    const unseen = planes.value.filter(p => !seenPlanes.value.has(p.id || p.name)) // Use ID if available, else name
+    
+    if (unseen.length > 0) {
+      availablePlanes = unseen
+    } else {
+      // All planes seen, reset seen list (reshuffle)
+      seenPlanes.value.clear()
+      availablePlanes = planes.value
+    }
+  }
+
+  const randomIndex = Math.floor(Math.random() * availablePlanes.length)
+  const selected = availablePlanes[randomIndex]
+  
+  // Track seen plane
+  if (!allowRepeats.value) {
+    seenPlanes.value.add(selected.id || selected.name)
+  }
+
+  currentPlane.value = selected
   translatedPlane.value = null
   translateCurrentPlane()
 }
