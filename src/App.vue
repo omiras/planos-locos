@@ -65,6 +65,12 @@
               {{ isFullscreen ? 'Salir Pantalla Completa' : 'Pantalla Completa' }}
             </button>
 
+            <button @click="isSoundEnabled = !isSoundEnabled"
+              :class="['w-12 text-sm font-semibold py-3 px-3 rounded-lg transition duration-150 flex items-center justify-center', isSoundEnabled ? 'bg-indigo-500 text-white' : 'bg-gray-200 text-gray-800']"
+              :title="isSoundEnabled ? 'Desactivar sonido' : 'Activar sonido'">
+              {{ isSoundEnabled ? '🔊' : '🔇' }}
+            </button>
+
 
           </div>
         </div>
@@ -107,6 +113,7 @@ const currentPlane = ref(null)
 const translatedPlane = ref(null)
 const isTranslating = ref(false)
 const showEnglish = ref(false)
+const isSoundEnabled = ref(true)
 
 const displayName = computed(() => {
   if (!currentPlane.value) return ''
@@ -201,9 +208,11 @@ function translateCurrentPlane() {
 async function fetchPlanesAndShow() {
   // play a random click sound when user requests a new plane
   try {
-    const randomSound = clickSounds[Math.floor(Math.random() * clickSounds.length)]
-    randomSound.currentTime = 0
-    await randomSound.play()
+    if (isSoundEnabled.value) {
+      const randomSound = clickSounds[Math.floor(Math.random() * clickSounds.length)]
+      randomSound.currentTime = 0
+      await randomSound.play()
+    }
   } catch (e) {
     // some browsers may reject play() silently if not allowed; ignore
   }
