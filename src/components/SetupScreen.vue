@@ -42,6 +42,19 @@
             />
           </button>
         </div>
+
+        <!-- Community Planes Option -->
+        <div class="flex flex-col space-y-2">
+          <label class="text-lg font-medium text-gray-700">Planos de la comunidad</label>
+          <select 
+            v-model="communityPlanesOption"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+          >
+            <option value="none">No usar</option>
+            <option value="only">Solo comunidad</option>
+            <option value="mixed">Mezclar con oficiales</option>
+          </select>
+        </div>
       </div>
 
       <div class="mt-10">
@@ -77,12 +90,16 @@ const emit = defineEmits(['start', 'propose'])
 const allowRepeats = ref(false)
 const soundEnabled = ref(true)
 const fullscreenEnabled = ref(true)
+const communityPlanesOption = ref('none')
 
 function startGame() {
   emit('start', {
     allowRepeats: allowRepeats.value,
     soundEnabled: soundEnabled.value,
-    fullscreenEnabled: fullscreenEnabled.value
+    allowRepeats: allowRepeats.value,
+    soundEnabled: soundEnabled.value,
+    fullscreenEnabled: fullscreenEnabled.value,
+    communityPlanesOption: communityPlanesOption.value
   })
 }
 </script>

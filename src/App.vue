@@ -107,6 +107,7 @@ import planesData from './assets/planes.json'
 import symbologyData from './assets/symbology.json'
 import SetupScreen from './components/SetupScreen.vue'
 import ProposalForm from './components/ProposalForm.vue'
+import { supabase } from './lib/supabase'
 
 // Create Audio instances for all sounds
 const clickSounds = [
@@ -134,6 +135,35 @@ async function handleStartGame(settings) {
   allowRepeats.value = settings.allowRepeats
   isSoundEnabled.value = settings.soundEnabled
   
+  // Handle community planes
+  let communityPlanes = []
+  if (settings.communityPlanesOption !== 'none') {
+    const { data, error } = await supabase
+      .from('proposals')
+      .select('*')
+      .eq('status', 'approved')
+    
+    if (data) {
+      communityPlanes = data.map(p => ({
+        id: p.id,
+        name: p.name,
+        type_line: 'Community Plane', // Default type
+        text: p.description, // Map description to text
+        text_es: p.description, // Assume Spanish for now or same text
+        artwork: p.image_url, // Map image_url to artwork
+        is_community: true
+      }))
+    }
+  }
+
+  if (settings.communityPlanesOption === 'only') {
+    planes.value = communityPlanes
+  } else if (settings.communityPlanesOption === 'mixed') {
+    planes.value = [...planesData, ...communityPlanes]
+  } else {
+    planes.value = planesData
+  }
+
   // Start game state first to ensure UI transition happens
   gameStarted.value = true
   
@@ -218,11 +248,16 @@ document.addEventListener('fullscreenchange', onFullscreenChange)
 onUnmounted(() => document.removeEventListener('fullscreenchange', onFullscreenChange))
 
 function getPlaneImage(plane) {
-  if (plane && plane.id) {
-    try {
-      return new URL(`./assets/images/${plane.id}.jpg`, import.meta.url).href
-    } catch (e) {
-      console.warn('Failed to load local image for', plane.name, e)
+  if (plane) {
+    if (plane.is_community) {
+      return plane.artwork
+    }
+    if (plane.id) {
+      try {
+        return new URL(`./assets/images/${plane.id}.jpg`, import.meta.url).href
+      } catch (e) {
+        console.warn('Failed to load local image for', plane.name, e)
+      }
     }
   }
   return plane ? (plane.artwork || plane.full || plane.image_uris?.art_crop) : ''
