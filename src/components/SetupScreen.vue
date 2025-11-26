@@ -52,6 +52,15 @@
           Empezar
         </button>
       </div>
+      
+      <div class="mt-4">
+        <button 
+          @click="$emit('propose')"
+          class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-md transform hover:scale-[1.02]"
+        >
+          Proponer Nuevo Plano
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -59,7 +68,7 @@
 <script setup>
 import { ref } from 'vue'
 
-const emit = defineEmits(['start'])
+const emit = defineEmits(['start', 'propose'])
 
 // Defaults:
 // Repeats: NO (false)

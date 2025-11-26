@@ -13,7 +13,14 @@
       </div>
     </div>
 
-    <SetupScreen v-if="!gameStarted" @start="handleStartGame" />
+    <SetupScreen v-if="!gameStarted && !showProposalForm" @start="handleStartGame" @propose="showProposalForm = true" />
+
+    <div v-else-if="showProposalForm" class="w-full flex flex-col items-center justify-center min-h-screen">
+       <button @click="showProposalForm = false" class="mb-4 text-white hover:text-gray-200 underline">
+        &larr; Back to Game
+      </button>
+      <ProposalForm />
+    </div>
 
     <div v-else class="w-full flex flex-col">
 
@@ -99,6 +106,7 @@ import sound3 from './assets/sound3.wav'
 import planesData from './assets/planes.json'
 import symbologyData from './assets/symbology.json'
 import SetupScreen from './components/SetupScreen.vue'
+import ProposalForm from './components/ProposalForm.vue'
 
 // Create Audio instances for all sounds
 const clickSounds = [
@@ -120,6 +128,7 @@ const isSoundEnabled = ref(true)
 const gameStarted = ref(false)
 const allowRepeats = ref(false)
 const seenPlanes = ref(new Set())
+const showProposalForm = ref(false)
 
 async function handleStartGame(settings) {
   allowRepeats.value = settings.allowRepeats
