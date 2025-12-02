@@ -42,6 +42,19 @@
             />
           </button>
         </div>
+
+        <!-- Community Planes Option -->
+        <div class="flex flex-col space-y-2">
+          <label class="text-lg font-medium text-gray-700">Planos de la comunidad</label>
+          <select 
+            v-model="communityPlanesOption"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+          >
+            <option value="none">No usar</option>
+            <option value="only">Solo comunidad</option>
+            <option value="mixed">Mezclar con oficiales</option>
+          </select>
+        </div>
       </div>
 
       <div class="mt-10">
@@ -52,6 +65,15 @@
           Empezar
         </button>
       </div>
+      
+      <div class="mt-4">
+        <button 
+          @click="$emit('propose')"
+          class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-md transform hover:scale-[1.02]"
+        >
+          Proponer Nuevo Plano
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -59,7 +81,7 @@
 <script setup>
 import { ref } from 'vue'
 
-const emit = defineEmits(['start'])
+const emit = defineEmits(['start', 'propose'])
 
 // Defaults:
 // Repeats: NO (false)
@@ -68,12 +90,16 @@ const emit = defineEmits(['start'])
 const allowRepeats = ref(false)
 const soundEnabled = ref(true)
 const fullscreenEnabled = ref(true)
+const communityPlanesOption = ref('none')
 
 function startGame() {
   emit('start', {
     allowRepeats: allowRepeats.value,
     soundEnabled: soundEnabled.value,
-    fullscreenEnabled: fullscreenEnabled.value
+    allowRepeats: allowRepeats.value,
+    soundEnabled: soundEnabled.value,
+    fullscreenEnabled: fullscreenEnabled.value,
+    communityPlanesOption: communityPlanesOption.value
   })
 }
 </script>
