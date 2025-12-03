@@ -1,13 +1,26 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-purple-900 to-indigo-900 p-2">
-    <!-- Fullscreen overlay with fade-out effect -->
-    <div v-if="showOverlay" :class="['fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity', overlayFading ? 'opacity-0' : 'opacity-100']"
-      @transitionend="showOverlay = false">
+    <!-- Fullscreen overlay with cross-fade effect -->
+    <div v-if="showOverlay" :class="['fixed inset-0 z-50 flex items-center justify-center bg-black', overlayFading ? 'opacity-0' : 'opacity-100']"
+      style="transition: opacity 0.5s ease-out"
+      @transitionend="onOverlayTransitionEnd">
       <div class="relative w-full h-full flex flex-col items-center justify-center">
+        <!-- Old plane image (fades out) -->
+        <img v-if="previousPlane"
+          :src="getPlaneImage(previousPlane)"
+          :alt="previousPlane.name" 
+          :class="['absolute inset-0 w-full h-full object-cover transition-opacity', imageCrossFading ? 'opacity-0' : 'opacity-100']"
+          style="transition-duration: 1.5s" />
+        
+        <!-- New plane image (fades in) -->
         <img v-if="currentPlane"
           :src="getPlaneImage(currentPlane)"
-          :alt="currentPlane.name" class="w-full h-full object-cover" />
-        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-8 text-white">
+          :alt="currentPlane.name" 
+          :class="['absolute inset-0 w-full h-full object-cover transition-opacity', imageCrossFading ? 'opacity-100' : 'opacity-0']"
+          style="transition-duration: 1.5s" />
+        
+        <div :class="['absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-8 text-white transition-opacity', textVisible ? 'opacity-100' : 'opacity-0']"
+          style="transition-duration: 0.5s">
           <h1 class="text-5xl font-bold">{{ displayName }}</h1>
         </div>
       </div>
@@ -122,6 +135,7 @@ clickSounds.forEach(sound => {
 // Load planes from local JSON (no external API calls needed)
 const planes = ref(planesData || [])
 const currentPlane = ref(null)
+const previousPlane = ref(null) // For cross-fade transition
 const translatedPlane = ref(null)
 const isTranslating = ref(false)
 const showEnglish = ref(false)
@@ -224,6 +238,9 @@ const titleRef = ref(null)
 // Overlay effect for new plane
 const showOverlay = ref(false)
 const overlayFading = ref(false)
+const imageCrossFading = ref(false)
+const textVisible = ref(false)
+const isTransitionInProgress = ref(false)
 
 // Fullscreen control
 const isFullscreen = ref(!!document.fullscreenElement)
@@ -307,6 +324,10 @@ function translateCurrentPlane() {
 }
 
 async function fetchPlanesAndShow() {
+  if (isTransitionInProgress.value) return
+  
+  isTransitionInProgress.value = true
+  
   // play a random click sound when user requests a new plane
   try {
     if (isSoundEnabled.value) {
@@ -317,16 +338,48 @@ async function fetchPlanesAndShow() {
   } catch (e) {
     // some browsers may reject play() silently if not allowed; ignore
   }
-  // Data already loaded from local JSON, just show a random plane
+  
+  // Store current plane as previous for cross-fade
+  previousPlane.value = currentPlane.value
+  
+  // Select new plane
   showRandomPlane()
-  // Show fullscreen overlay with fade-out effect
+  
+  // Preload new image
+  const newImageSrc = getPlaneImage(currentPlane.value)
+  if (newImageSrc) {
+    await new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => resolve()
+      img.onerror = () => resolve() // Continue even if error
+      img.src = newImageSrc
+    })
+  }
+  
+  // Show overlay
   showOverlay.value = true
   overlayFading.value = false
-  // After 2 seconds, start fading out
+  imageCrossFading.value = false
+  textVisible.value = false
+  
+  await nextTick()
+  
+  // Start image cross-fade after a brief moment
+  setTimeout(() => {
+    imageCrossFading.value = true
+  }, 100)
+  
+  // Show text after image transition
+  setTimeout(() => {
+    textVisible.value = true
+  }, 1700) // 100ms delay + 1500ms crossfade + 100ms buffer
+  
+  // Start fading out overlay
   setTimeout(() => {
     overlayFading.value = true
-  }, 2000)
-  // Wait for DOM update and scroll the title into view after overlay fades
+  }, 2500)
+  
+  // Scroll after overlay fades
   setTimeout(() => {
     try {
       if (titleRef.value && titleRef.value.scrollIntoView) {
@@ -335,7 +388,17 @@ async function fetchPlanesAndShow() {
     } catch (e) {
       // ignore
     }
-  }, 2300)
+    isTransitionInProgress.value = false
+  }, 3000)
+}
+
+function onOverlayTransitionEnd() {
+  if (overlayFading.value) {
+    showOverlay.value = false
+    previousPlane.value = null
+    imageCrossFading.value = false
+    textVisible.value = false
+  }
 }
 </script>
 
