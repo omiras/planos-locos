@@ -37,9 +37,19 @@
 
         <!-- Card Info - bottom section -->
         <div class="bg-white p-4 relative z-10">
-          <h2 ref="titleRef" class="text-2xl font-bold text-gray-800 mb-2">
-            {{ displayName }}
-          </h2>
+          <div class="flex items-center gap-2 mb-2">
+            <h2 ref="titleRef" class="text-2xl font-bold text-gray-800">
+              {{ displayName }}
+            </h2>
+            <button 
+              v-if="currentPlane && currentPlane.full"
+              @click="showOriginalModal = true"
+              class="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer text-xl"
+              title="Ver plano original"
+            >
+              🖼️
+            </button>
+          </div>
 
           <div v-if="displayType" class="text-sm text-gray-600 mb-3 italic">
             {{ displayType }}
@@ -95,6 +105,28 @@
         </div>
       </div>
     </div>
+
+    <!-- Original Plane Image Modal -->
+    <div 
+      v-if="showOriginalModal && currentPlane && currentPlane.full"
+      @click="showOriginalModal = false"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-4"
+    >
+      <button
+        @click="showOriginalModal = false"
+        class="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 transition-colors z-10"
+        title="Cerrar"
+      >
+        ✕
+      </button>
+      <img 
+        :src="currentPlane.full"
+        :alt="displayName"
+        @click.stop
+        class="max-h-[95vh] max-w-[95vw] object-contain"
+        style="transform: rotate(90deg);"
+      />
+    </div>
   </div>
 </template>
 
@@ -130,6 +162,7 @@ const gameStarted = ref(false)
 const allowRepeats = ref(false)
 const seenPlanes = ref(new Set())
 const showProposalForm = ref(false)
+const showOriginalModal = ref(false)
 
 async function handleStartGame(settings) {
   allowRepeats.value = settings.allowRepeats
@@ -246,6 +279,15 @@ function onFullscreenChange() {
 }
 document.addEventListener('fullscreenchange', onFullscreenChange)
 onUnmounted(() => document.removeEventListener('fullscreenchange', onFullscreenChange))
+
+// Close modal on ESC key
+function onKeyDown(e) {
+  if (e.key === 'Escape' && showOriginalModal.value) {
+    showOriginalModal.value = false
+  }
+}
+document.addEventListener('keydown', onKeyDown)
+onUnmounted(() => document.removeEventListener('keydown', onKeyDown))
 
 function getPlaneImage(plane) {
   if (plane) {
