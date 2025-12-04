@@ -110,7 +110,7 @@
     <div 
       v-if="showOriginalModal && currentPlane && currentPlane.full"
       @click="showOriginalModal = false"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-4"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
     >
       <button
         @click="showOriginalModal = false"
@@ -123,7 +123,7 @@
         :src="currentPlane.full"
         :alt="displayName"
         @click.stop
-        class="max-h-[95vh] max-w-[95vw] object-contain"
+        class="max-w-[90vw] max-h-[90vh] object-contain"
         style="transform: rotate(90deg);"
       />
     </div>
