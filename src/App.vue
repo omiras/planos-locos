@@ -123,7 +123,7 @@
         :src="currentPlane.full"
         :alt="displayName"
         @click.stop
-        class="max-w-[90vw] max-h-[90vh] object-contain"
+        class="max-w-sm lg:max-w-max"
         style="transform: rotate(90deg);"
       />
     </div>
