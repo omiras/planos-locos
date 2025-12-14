@@ -76,7 +76,10 @@ const submitProposal = async () => {
 <template>
   <div class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
     <h2 class="text-2xl font-bold mb-4 text-gray-800">Propose New Plane</h2>
-    
+    <p class="mb-4">Propose a new plane to the community.
+    Fill in the form below and submit your proposal.
+    Once submitted, your proposal will be reviewed.
+    Once approved, your plane will be added to the game.</p>
     <div v-if="message" class="mb-4 p-3 bg-green-100 text-green-700 rounded">
       {{ message }}
     </div>
