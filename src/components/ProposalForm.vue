@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 
 const name = ref('')
 const description = ref('')
+const author = ref('')
 const file = ref(null)
 const loading = ref(false)
 const message = ref('')
@@ -19,7 +20,7 @@ const submitProposal = async () => {
   message.value = ''
   error.value = ''
 
-  if (!name.value || !description.value || !file.value) {
+  if (!name.value || !description.value || !author.value || !file.value) {
     error.value = 'Please fill in all fields.'
     loading.value = false
     return
@@ -48,6 +49,7 @@ const submitProposal = async () => {
       .insert({
         name: name.value,
         description: description.value,
+        author: author.value,
         image_url: publicUrl,
         status: 'pending'
       })
@@ -57,6 +59,7 @@ const submitProposal = async () => {
     message.value = 'Proposal submitted successfully!'
     name.value = ''
     description.value = ''
+    author.value = ''
     file.value = null
     // Reset file input manually if needed
     document.getElementById('plane-image').value = ''
@@ -103,6 +106,18 @@ const submitProposal = async () => {
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
           placeholder="Describe the plane..."
         ></textarea>
+      </div>
+
+      <div>
+        <label for="plane-author" class="block text-sm font-medium text-gray-700">Author</label>
+        <input 
+          id="plane-author" 
+          v-model="author" 
+          type="text" 
+          maxlength="50"
+          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+          placeholder="e.g. John Doe"
+        />
       </div>
 
       <div>
