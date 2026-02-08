@@ -44,7 +44,7 @@
         </div>
 
         <!-- Community Planes Option -->
-        <div class="flex flex-col space-y-2">
+        <div class="flex flex-col space-y-2" v-if="ENABLE_ADD_NEW_PLANE">
           <label class="text-lg font-medium text-gray-700">Planos de la comunidad</label>
           <select 
             v-model="communityPlanesOption"
@@ -66,7 +66,7 @@
         </button>
       </div>
       
-      <div class="mt-4">
+      <div class="mt-4" v-if="ENABLE_ADD_NEW_PLANE">
         <button 
           @click="$emit('propose')"
           class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-200 shadow-md transform hover:scale-[1.02]"
@@ -80,6 +80,8 @@
 
 <script setup>
 import { ref } from 'vue'
+
+const ENABLE_ADD_NEW_PLANE = false
 
 const emit = defineEmits(['start', 'propose'])
 
