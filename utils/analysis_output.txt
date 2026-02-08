@@ -1,0 +1,15 @@
+Unique Set Types: planechase,commander,funny,memorabilia
+Unique Set Names: Planechase Anthology Planes,Doctor Who,Black Lotus Unknown Planechase,March of the Machine Commander,Secret Lair Showcase Planes
+Unique Sets: opca,who,punk,moc,pssc
+
+--- Analysis ---
+Cards with set_type 'planechase': 56
+Cards with specific Planechase set codes (hop, pc2, pca, opca): 56
+Planes NOT in Planechase sets: 118
+Examples of non-Planechase planes: [
+  "Amy's Home (Doctor Who, commander)",
+  "Antarctic Research Base (Doctor Who, commander)",
+  "Aplan Mortarium (Doctor Who, commander)",
+  "Artist Alley (Black Lotus Unknown Planechase, funny)",
+  "Asmoranomardicadaistinaculdacar's Kitchen (Black Lotus Unknown Planechase, funny)"
+]
