@@ -4,7 +4,14 @@
     <div v-if="showOverlay" :class="['fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity', overlayFading ? 'opacity-0' : 'opacity-100']"
       @transitionend="showOverlay = false">
       <div class="relative w-full h-full flex flex-col items-center justify-center">
-        <img v-if="currentPlane"
+        <video v-if="currentPlane && PLANES_WITH_VIDEO.includes(currentPlane.id) && !overlayVideoError"
+          :src="getPlaneVideo(currentPlane)"
+          @error="overlayVideoError = true"
+          autoplay
+          loop
+          playsinline
+          class="w-full h-full object-cover" />
+        <img v-else-if="currentPlane"
           :src="getPlaneImage(currentPlane)"
           :alt="currentPlane.name" class="w-full h-full object-cover" />
         <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-8 text-white">
@@ -27,7 +34,13 @@
       <div v-if="currentPlane" class="flex flex-col h-full">
         <!-- Card Image - top portion (no rotation) -->
         <div class="w-full flex-none h-[60vh] overflow-hidden bg-black">
-          <img v-if="currentPlane"
+          <video v-if="currentPlane && PLANES_WITH_VIDEO.includes(currentPlane.id) && !mainVideoError"
+            :src="getPlaneVideo(currentPlane)"
+            @error="mainVideoError = true"
+            autoplay
+            playsinline
+            class="w-full h-full object-cover" />
+          <img v-else-if="currentPlane"
             :src="getPlaneImage(currentPlane)"
             :alt="currentPlane.name" class="w-full h-full object-cover" />
           <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
@@ -131,7 +144,7 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onUnmounted, onMounted } from 'vue'
 import sound1 from './assets/sound1.wav'
 import sound2 from './assets/sound2.wav'
 import sound3 from './assets/sound3.wav'
@@ -140,6 +153,18 @@ import symbologyData from './assets/symbology.json'
 import SetupScreen from './components/SetupScreen.vue'
 import ProposalForm from './components/ProposalForm.vue'
 import { supabase } from './lib/supabase'
+
+// List of planes that actually have webm videos in public/videos
+const PLANES_WITH_VIDEO = [
+  '0b8a0cad-92df-45a1-a3cc-561be2f06778',
+  '0c8456bd-d290-43af-b2b9-06823bab65a2',
+  '0cf339cb-04c0-40e8-a64c-b80229a32cec',
+  '0dadba2e-1d9a-4f04-b9d5-a3edff017662',
+  '0e2d8456-6e3c-42ee-8bd4-215db5fbda98',
+  '0ff946f3-a536-4b35-b953-e66667314afa',
+  '1a4238ce-2a8f-404f-a893-9bb8b3f26835',
+  '1dde33fa-f748-43c9-9ead-9461332e9e67'
+]
 
 // Create Audio instances for all sounds
 const clickSounds = [
@@ -163,6 +188,8 @@ const allowRepeats = ref(false)
 const seenPlanes = ref(new Set())
 const showProposalForm = ref(false)
 const showOriginalModal = ref(false)
+const overlayVideoError = ref(false)
+const mainVideoError = ref(false)
 
 async function handleStartGame(settings) {
   allowRepeats.value = settings.allowRepeats
@@ -205,7 +232,21 @@ async function handleStartGame(settings) {
     await toggleFullScreen()
   }
   
-  showRandomPlane()
+  // Check if there's a plane ID in URL
+  const urlParams = new URLSearchParams(window.location.search)
+  const planeId = urlParams.get('plane')
+  
+  if (planeId) {
+    // Try to load specific plane from URL
+    const loaded = loadPlaneById(planeId)
+    if (!loaded) {
+      // If plane not found, show random plane as fallback
+      showRandomPlane()
+    }
+  } else {
+    // No URL parameter, show random plane
+    showRandomPlane()
+  }
 }
 
 const displayName = computed(() => {
@@ -289,6 +330,14 @@ function onKeyDown(e) {
 document.addEventListener('keydown', onKeyDown)
 onUnmounted(() => document.removeEventListener('keydown', onKeyDown))
 
+function getPlaneVideo(plane) {
+  if (plane && plane.id && PLANES_WITH_VIDEO.includes(plane.id)) {
+    // Videos are now in public/videos folder
+    return `/videos/${plane.id}.webm`
+  }
+  return null
+}
+
 function getPlaneImage(plane) {
   if (plane) {
     if (plane.is_community) {
@@ -333,6 +382,8 @@ function showRandomPlane() {
 
   currentPlane.value = selected
   translatedPlane.value = null
+  overlayVideoError.value = false
+  mainVideoError.value = false
   translateCurrentPlane()
 }
 
@@ -348,22 +399,69 @@ function translateCurrentPlane() {
   isTranslating.value = false
 }
 
-async function fetchPlanesAndShow() {
-  // play a random click sound when user requests a new plane
-  try {
-    if (isSoundEnabled.value) {
-      const randomSound = clickSounds[Math.floor(Math.random() * clickSounds.length)]
-      randomSound.currentTime = 0
-      await randomSound.play()
+function loadPlaneById(planeId) {
+  if (!planeId || planes.value.length === 0) return false
+
+  const plane = planes.value.find(p => p.id === planeId)
+  
+  if (plane) {
+    currentPlane.value = plane
+    translatedPlane.value = null
+    overlayVideoError.value = false
+    mainVideoError.value = false
+    translateCurrentPlane()
+    
+    // Mark as seen if repeats not allowed
+    if (!allowRepeats.value) {
+      seenPlanes.value.add(plane.id || plane.name)
     }
-  } catch (e) {
-    // some browsers may reject play() silently if not allowed; ignore
+    
+    // Show overlay effect
+    showOverlay.value = true
+    overlayFading.value = false
+    setTimeout(() => {
+      overlayFading.value = true
+    }, 2000)
+    setTimeout(() => {
+      try {
+        if (titleRef.value && titleRef.value.scrollIntoView) {
+          titleRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      } catch (e) {
+        // ignore
+      }
+    }, 2300)
+    
+    return true
   }
+  
+  console.warn(`Plane with ID "${planeId}" not found`)
+  return false
+}
+
+async function fetchPlanesAndShow() {
   // Data already loaded from local JSON, just show a random plane
   showRandomPlane()
   // Show fullscreen overlay with fade-out effect
   showOverlay.value = true
   overlayFading.value = false
+  
+  // play a random click sound after a small delay to avoid conflicts with video autoplay
+  // BUT only if the plane doesn't have video (video has its own audio)
+  setTimeout(async () => {
+    try {
+      const hasVideo = currentPlane.value && PLANES_WITH_VIDEO.includes(currentPlane.value.id)
+      if (isSoundEnabled.value && !hasVideo) {
+        const randomSound = clickSounds[Math.floor(Math.random() * clickSounds.length)]
+        // Use cloneNode to allow overlapping sounds and ensure it plays every time
+        const soundClone = randomSound.cloneNode()
+        await soundClone.play()
+      }
+    } catch (e) {
+      console.warn('Sound playback failed:', e)
+    }
+  }, 100)
+  
   // After 2 seconds, start fading out
   setTimeout(() => {
     overlayFading.value = true
@@ -379,6 +477,17 @@ async function fetchPlanesAndShow() {
     }
   }, 2300)
 }
+
+// Check URL parameters on mount to load specific plane
+onMounted(() => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const planeId = urlParams.get('plane')
+  
+  if (planeId && gameStarted.value) {
+    // If game is already started, try to load the specific plane
+    loadPlaneById(planeId)
+  }
+})
 </script>
 
 <style scoped>
